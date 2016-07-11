@@ -59,7 +59,7 @@ CGFloat buttonSpacerHeight = 0;
 - (void)show
 {
     dialogView = [self createContainerView];
-  
+    dialogView.clipsToBounds = YES;
     dialogView.layer.shouldRasterize = YES;
     dialogView.layer.rasterizationScale = [[UIScreen mainScreen] scale];
   
