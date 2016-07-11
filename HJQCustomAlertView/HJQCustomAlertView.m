@@ -9,9 +9,10 @@
 
 #import "HJQCustomAlertView.h"
 #import <QuartzCore/QuartzCore.h>
-
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+#define COLOR_LINE_SEPARATER UIColorFromRGB(0xE0E1E0) // button之间分割线颜色
+#define kButtonSpacerHeight  (1/[UIScreen mainScreen].scale) // 分割线宽度
 const static CGFloat kHJQCustomAlertViewDefaultButtonHeight       = 50;
-const static CGFloat kHJQCustomAlertViewDefaultButtonSpacerHeight = 1;
 const static CGFloat kHJQCustomAlertViewCornerRadius              = 7;
 const static CGFloat kCustomIOS7MotionEffectExtent                = 10.0;
 
@@ -43,7 +44,7 @@ CGFloat buttonSpacerHeight = 0;
 
         delegate = self;
         useMotionEffects = false;
-        buttonTitles = @[@"Close"];
+//        buttonTitles = @[@"Close"];
         
         [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
 
@@ -206,10 +207,15 @@ CGFloat buttonSpacerHeight = 0;
     // First, we style the dialog to match the iOS7 UIAlertView >>>
     CAGradientLayer *gradient = [CAGradientLayer layer];
     gradient.frame = dialogContainer.bounds;
+//    gradient.colors = [NSArray arrayWithObjects:
+//                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
+//                       (id)[[UIColor colorWithRed:233.0/255.0 green:233.0/255.0 blue:233.0/255.0 alpha:1.0f] CGColor],
+//                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
+//                       nil];
     gradient.colors = [NSArray arrayWithObjects:
-                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
-                       (id)[[UIColor colorWithRed:233.0/255.0 green:233.0/255.0 blue:233.0/255.0 alpha:1.0f] CGColor],
-                       (id)[[UIColor colorWithRed:218.0/255.0 green:218.0/255.0 blue:218.0/255.0 alpha:1.0f] CGColor],
+                       (id)[[UIColor colorWithRed:1 green:1 blue:1 alpha:1.0f] CGColor],
+                       (id)[[UIColor colorWithRed:1 green:1 blue:1 alpha:1.0f] CGColor],
+                       (id)[[UIColor colorWithRed:1 green:1 blue:1 alpha:1.0f] CGColor],
                        nil];
 
     CGFloat cornerRadius = kHJQCustomAlertViewCornerRadius;
@@ -226,8 +232,8 @@ CGFloat buttonSpacerHeight = 0;
     dialogContainer.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:dialogContainer.bounds cornerRadius:dialogContainer.layer.cornerRadius].CGPath;
 
     // There is a line above the button
-    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, dialogContainer.bounds.size.height - buttonHeight - buttonSpacerHeight, dialogContainer.bounds.size.width, buttonSpacerHeight)];
-    lineView.backgroundColor = [UIColor colorWithRed:198.0/255.0 green:198.0/255.0 blue:198.0/255.0 alpha:1.0f];
+    UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, dialogContainer.bounds.size.height - buttonHeight - buttonSpacerHeight, dialogContainer.bounds.size.width, kButtonSpacerHeight)];
+    lineView.backgroundColor = COLOR_LINE_SEPARATER;
     [dialogContainer addSubview:lineView];
     // ^^^
 
@@ -245,20 +251,27 @@ CGFloat buttonSpacerHeight = 0;
 {
     if (buttonTitles==NULL) { return; }
 
-    CGFloat buttonWidth = container.bounds.size.width / [buttonTitles count];
+    CGFloat buttonWidth = (container.bounds.size.width / [buttonTitles count])-kButtonSpacerHeight;
 
     for (int i=0; i<[buttonTitles count]; i++) {
 
         UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
 
-        [closeButton setFrame:CGRectMake(i * buttonWidth, container.bounds.size.height - buttonHeight, buttonWidth, buttonHeight)];
-
+        [closeButton setFrame:CGRectMake((i * buttonWidth)+1, container.bounds.size.height - buttonHeight, buttonWidth, buttonHeight)];
+        
         [closeButton addTarget:self action:@selector(customIOS7dialogButtonTouchUpInside:) forControlEvents:UIControlEventTouchUpInside];
         [closeButton setTag:i];
+        
+        if (!(i == 0||i == [buttonTitles count])) {
+            UIView *sliderView = [[UIView alloc]init];
+            sliderView.frame = CGRectMake(i * buttonWidth, container.bounds.size.height - buttonHeight, kButtonSpacerHeight, buttonHeight);
+            sliderView.backgroundColor = COLOR_LINE_SEPARATER;
+            [container addSubview:sliderView];
+        }
 
         [closeButton setTitle:[buttonTitles objectAtIndex:i] forState:UIControlStateNormal];
         [closeButton setTitleColor:[UIColor colorWithRed:0.0f green:0.5f blue:1.0f alpha:1.0f] forState:UIControlStateNormal];
-        [closeButton setTitleColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:0.5f] forState:UIControlStateHighlighted];
+        [closeButton setTitleColor:[UIColor colorWithRed:0.0f green:0.5f blue:1.0f alpha:1.0f] forState:UIControlStateHighlighted];
         [closeButton.titleLabel setFont:[UIFont boldSystemFontOfSize:14.0f]];
         [closeButton.layer setCornerRadius:kHJQCustomAlertViewCornerRadius];
 
@@ -280,7 +293,7 @@ CGFloat buttonSpacerHeight = 0;
 {
     if (buttonTitles!=NULL && [buttonTitles count] > 0) {
         buttonHeight       = kHJQCustomAlertViewDefaultButtonHeight;
-        buttonSpacerHeight = kHJQCustomAlertViewDefaultButtonSpacerHeight;
+        buttonSpacerHeight = kButtonSpacerHeight;
     } else {
         buttonHeight = 0;
         buttonSpacerHeight = 0;
